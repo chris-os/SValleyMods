@@ -59,6 +59,7 @@ namespace SkullCavernElevator
             helper.Reflection.GetPrivateMethod(Game1.currentLocation, "prepareElevator").Invoke();
             Point tile = Utility.findTile(Game1.currentLocation, 80, "Buildings");
             this.Monitor.Log("x "+tile.X + " y "+tile.Y, LogLevel.Info);
+            tile.GetPrivateFields();
             //(Game1.currentLocation as MineShaft).pr
         }
     }

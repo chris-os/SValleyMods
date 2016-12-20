@@ -2,8 +2,8 @@
    "Name": "SkullCavernElevator",
    "Author": "lestoph",
    "Version": {
-      "MajorVersion": 1,
-      "MinorVersion": 0,
+      "MajorVersion": 0,
+      "MinorVersion": 9,
       "PatchVersion": 0,
       "Build": ""
    },

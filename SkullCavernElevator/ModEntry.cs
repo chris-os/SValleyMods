@@ -29,7 +29,7 @@ namespace SkullCavernElevator
         {
             config = helper.ReadConfig<ModConfig>();
             this.helper = helper;
-            ControlEvents.MouseChanged += ControlEvents_MouseChanged;
+            //ControlEvents.MouseChanged += ControlEvents_MouseChanged;
             MineEvents.MineLevelChanged += MineEvents_MineLevelChanged;
             MenuEvents.MenuChanged += MenuChanged;
             GameEvents.UpdateTick += SetUpSkullCave;
@@ -103,7 +103,7 @@ namespace SkullCavernElevator
             this.Monitor.Log("x " + tile.X + " y " + tile.Y, LogLevel.Info);
         }
 
-        private void ControlEvents_MouseChanged(object sender, EventArgsMouseStateChanged e)
+        /*private void ControlEvents_MouseChanged(object sender, EventArgsMouseStateChanged e)
         {
             //Check for MapPage to be open
             if (!(Game1.activeClickableMenu is GameMenu) || (Game1.activeClickableMenu as GameMenu).currentTab != 3)
@@ -121,7 +121,7 @@ namespace SkullCavernElevator
             Game1.enterMine(true, 200, null);
                
             //(Game1.currentLocation as MineShaft).pr
-        }
+        } */
     }
 
     public class MyElevatorMenu : MineElevatorMenu

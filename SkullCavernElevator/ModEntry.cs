@@ -18,7 +18,6 @@ namespace SkullCavernElevator
     {
 
         private IModHelper helper;
-        private ModConfig config;
 
         /*********
         ** Public methods
@@ -27,7 +26,6 @@ namespace SkullCavernElevator
         /// <param name="helper">Provides methods for interacting with the mod directory, such as read/writing a config file or custom JSON files.</param>
         public override void Entry(IModHelper helper)
         {
-            config = helper.ReadConfig<ModConfig>();
             this.helper = helper;
             //ControlEvents.MouseChanged += ControlEvents_MouseChanged;
             MineEvents.MineLevelChanged += MineEvents_MineLevelChanged;
@@ -58,7 +56,7 @@ namespace SkullCavernElevator
 
         private void MenuChanged(object sender, EventArgsClickableMenuChanged e)
         {
-            if (! (e.NewMenu is MineElevatorMenu) || Game1.currentLocation.name == "Mine")
+            if (!(e.NewMenu is MineElevatorMenu) || Game1.currentLocation.name == "Mine" || e.NewMenu is MyElevatorMenu)
             {
                 return;
             }
@@ -85,45 +83,45 @@ namespace SkullCavernElevator
             ms.map.LoadTileSheets(Game1.mapDisplayDevice);
 
 
-            Vector2 ladder = helper.Reflection.GetPrivateValue<Vector2>(ms, "tileBeneathLadder");
+            Vector2 ladder = findLadder(ms);
             int elevatorX = (int)ladder.X + 1;
-            int elevatorY = (int)ladder.Y -3;
+            int elevatorY = (int)ladder.Y - 3;
             helper.Reflection.GetPrivateField<Vector2>(ms, "tileBeneathElevator").SetValue(new Vector2(elevatorX, elevatorY + 2));
 
-            ms.setMapTileIndex(elevatorX, elevatorY + 2, 112, "Buildings",1);
+            ms.setMapTileIndex(elevatorX, elevatorY + 2, 112, "Buildings", 1);
             ms.setMapTileIndex(elevatorX, elevatorY + 1, 96, "Front", 1);
-            ms.setMapTileIndex(elevatorX, elevatorY, 80, "Front",1);
-            ms.setMapTile(elevatorX, elevatorY, 80, "Front", "MineElevator",1);
+            ms.setMapTileIndex(elevatorX, elevatorY, 80, "Front", 1);
+            ms.setMapTile(elevatorX, elevatorY, 80, "Front", "MineElevator", 1);
             ms.setMapTile(elevatorX, elevatorY + 1, 96, "Front", "MineElevator", 1);
-            ms.setMapTile(elevatorX, elevatorY + 2, 112, "Buildings", "MineElevator",1);
-            
-            
+            ms.setMapTile(elevatorX, elevatorY + 2, 112, "Buildings", "MineElevator", 1);
+
+
             helper.Reflection.GetPrivateMethod(ms, "prepareElevator").Invoke();
             Point tile = Utility.findTile(ms, 80, "Buildings");
             this.Monitor.Log("x " + tile.X + " y " + tile.Y, LogLevel.Info);
         }
 
-        /*private void ControlEvents_MouseChanged(object sender, EventArgsMouseStateChanged e)
+        private Vector2 findLadder(MineShaft ms)
         {
-            //Check for MapPage to be open
-            if (!(Game1.activeClickableMenu is GameMenu) || (Game1.activeClickableMenu as GameMenu).currentTab != 3)
+            Map map = ms.map;
+            for (int yTile = 0; yTile < map.GetLayer("Buildings").LayerHeight; ++yTile)
             {
-                return;
+                for (int xTile = 0; xTile < map.GetLayer("Buildings").LayerWidth; ++xTile)
+                {
+                    if (map.GetLayer("Buildings").Tiles[xTile, yTile] != null)
+                    {
+                        int tileIndex = map.GetLayer("Buildings").Tiles[xTile, yTile].TileIndex;
+                        if (tileIndex == 115)
+                        {
+                            return new Vector2((float)xTile, (float)(yTile + 1));
+                        }
+                    }
+                }
             }
-            if (e.NewState.LeftButton != Microsoft.Xna.Framework.Input.ButtonState.Pressed)
-            {
-                return;
-            }
-            if (!Game1.oldKBState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift))
-            {
-                return;
-            }
-            Game1.enterMine(true, 200, null);
-               
-            //(Game1.currentLocation as MineShaft).pr
-        } */
-    }
+            return helper.Reflection.GetPrivateValue<Vector2>(ms, "tileBeneathLadder");
+        }
 
+    }
     public class MyElevatorMenu : MineElevatorMenu
     {
         public MyElevatorMenu()
@@ -183,6 +181,7 @@ namespace SkullCavernElevator
                             Game1.warpFarmer("SkullCave", 3, 4, 2);
                             Game1.exitActiveMenu();
                             Game1.changeMusicTrack("none");
+                            Game1.mine.mineLevel = 0;
                             gotSelected = true;
                         }
                         else

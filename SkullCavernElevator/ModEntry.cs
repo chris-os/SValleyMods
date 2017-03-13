@@ -18,6 +18,7 @@ namespace SkullCavernElevator
     {
 
         private IModHelper helper;
+        private ModConfig config;
 
         /*********
         ** Public methods
@@ -27,10 +28,10 @@ namespace SkullCavernElevator
         public override void Entry(IModHelper helper)
         {
             this.helper = helper;
-            //ControlEvents.MouseChanged += ControlEvents_MouseChanged;
             MineEvents.MineLevelChanged += MineEvents_MineLevelChanged;
             MenuEvents.MenuChanged += MenuChanged;
-            GameEvents.UpdateTick += SetUpSkullCave;
+            SaveEvents.AfterLoad += SetUpSkullCave;
+            this.config = helper.ReadConfig<ModConfig>();
         }
 
         private void SetUpSkullCave(object sender, EventArgs e)
@@ -49,9 +50,9 @@ namespace SkullCavernElevator
             skullCave.setMapTileIndex(4, 1 + 2, 112, "Buildings", 2);
             skullCave.setMapTileIndex(4, 1 + 1, 96, "Front", 2);
             skullCave.setMapTileIndex(4, 1, 80, "Front", 2);
-            skullCave.setMapTile(4, 1, 80, "Front", "MineElevator", 2);
-            skullCave.setMapTile(4, 1 + 1, 96, "Front", "MineElevator", 2);
             skullCave.setMapTile(4, 1 + 2, 112, "Buildings", "MineElevator", 2);
+            skullCave.setMapTile(4, 1 + 1, 96, "Front", "MineElevator", 2);
+            skullCave.setMapTile(4, 1, 80, "Front", "MineElevator", 2);
         }
 
         private void MenuChanged(object sender, EventArgsClickableMenuChanged e)
@@ -64,12 +65,12 @@ namespace SkullCavernElevator
             {
                 return;
             }
-            Game1.activeClickableMenu = new MyElevatorMenu();
+            Game1.activeClickableMenu = new MyElevatorMenu(config.elevatorStep);
         }
 
         private void MineEvents_MineLevelChanged(object sender, EventArgsMineLevelChanged e)
         {
-            if (!Game1.hasLoadedGame || Game1.mine == null || Game1.mine.mineLevel % 5 != 0 || Game1.mine.mineLevel <= 120 || !(Game1.currentLocation is MineShaft))
+            if (!Game1.hasLoadedGame || Game1.mine == null || Game1.mine.mineLevel % config.elevatorStep != 0 || Game1.mine.mineLevel <= 120 || !(Game1.currentLocation is MineShaft))
             {
                 return;
             }
@@ -124,14 +125,14 @@ namespace SkullCavernElevator
     }
     public class MyElevatorMenu : MineElevatorMenu
     {
-        public MyElevatorMenu()
+        public MyElevatorMenu(int elevatorStep)
     {
             this.initialize(0,0,0,0,true);
             if ((int)Game1.gameMode != 3 || Game1.player == null || Game1.eventUp)
                 return;
             Game1.player.Halt();
             this.elevators.Clear();
-            int num = (Game1.player.deepestMineLevel-120) / 5;
+            int num = (Game1.player.deepestMineLevel-120) / elevatorStep;
             this.width = num > 50 ? (Game1.tileSize * 3 / 4 - 4) * 11 + IClickableMenu.borderWidth * 2 : Math.Min((Game1.tileSize * 3 / 4 - 4) * 5 + IClickableMenu.borderWidth * 2, num * (Game1.tileSize * 3 / 4 - 4) + IClickableMenu.borderWidth * 2);
             this.height = Math.Max(Game1.tileSize + IClickableMenu.borderWidth * 3, num * (Game1.tileSize * 3 / 4 - 4) / (this.width - IClickableMenu.borderWidth) * (Game1.tileSize * 3 / 4 - 4) + Game1.tileSize + IClickableMenu.borderWidth * 3);
             this.xPositionOnScreen = Game1.viewport.Width / 2 - this.width / 2;
@@ -148,7 +149,7 @@ namespace SkullCavernElevator
             }
             for (int index = 1; index <= num; ++index)
             {
-                this.elevators.Add(new ClickableComponent(new Rectangle(x2, y, Game1.tileSize * 3 / 4 - 4, Game1.tileSize * 3 / 4 - 4), string.Concat((object)(index * 5))));
+                this.elevators.Add(new ClickableComponent(new Rectangle(x2, y, Game1.tileSize * 3 / 4 - 4, Game1.tileSize * 3 / 4 - 4), string.Concat((object)(index * elevatorStep))));
                 x2 = x2 + Game1.tileSize - 20;
                 if (x2 > this.xPositionOnScreen + this.width - IClickableMenu.borderWidth)
                 {

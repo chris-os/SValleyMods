@@ -47,6 +47,8 @@
   <ItemGroup>
     <Compile Include="ModConfig.cs" />
     <Compile Include="ModEntry.cs" />
+    <Compile Include="MyElevatorMenu.cs" />
+    <Compile Include="MyElevatorMenuWithScrollbar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
